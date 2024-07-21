@@ -59,8 +59,53 @@ cmake --build build
 g++ -c hello.cpp good_morning.cpp
 
 # ar コマンドを使って、hello.o と good_morning.o のオブジェクトファイルを libgreetings.a という名前の静的ライブラリにまとめる
-# # -r オプションはファイルを追加または置き換え、-v は詳細な出力を表示、-s はインデックスを作成する
+# -r オプションはファイルを追加または置き換え、-v は詳細な出力を表示、-s はインデックスを作成する
+# ar コマンドは、アーカイブファイルを作ったり操作したりするためのツール。
+# アーカイブファイルとは、複数のファイルをひとつにまとめたもので静的ライブラリとして扱われる。
 ar rvs libgreetings.a hello.o good_morning.o
 
-g++ main.cpp libgreetings.a                   # main.cppをコンパイルしてlibgreetings.aとリンクし実行ファイルa.outを作成
+# main.cppをコンパイルしてlibgreetings.aとリンクし実行ファイルa.outを作成
+g++ main.cpp libgreetings.a
 ```
+
+#### 共有ライブラリを作成
+
+```bash
+# オブジェクトファイル(hello.o, good_morning.o)の作成
+# -fPIC オプション: Position Independent Code（位置独立コード）を生成するためのオプション。共有ライブラリを作るときに必要
+g++ -fPIC -c hello.cpp good_morning.cpp
+
+# 共有ライブラリ（libgreetings.so）の作成
+# -o オプション: 出力ファイルの名前を指定する。ここでは `libgreetings.so` という名前にしている。
+# -shared オプション:
+#   共有ライブラリを作るためのオプション。
+#   これで `hello.o` と `good_morning.o` をまとめて共有ライブラリ `libgreetings.so` にする
+g++ -shared hello.o good_morning.o -o libgreetings.so
+
+# main.cppをコンパイルしてlibgreetings.soとリンクし実行ファイルa.outを作成
+# -L. オプション: ライブラリを探すディレクトリを指定する。ここではカレントディレクトリ（.）を指定している。
+# -lgreetings オプション: `libgreetings.so` というライブラリをリンクする
+# -Xlinker -rpath -Xlinker . オプション:
+#   ランタイムパス（ライブラリを探す場所）を指定する。
+#   ここではカレントディレクトリ（.）に設定している。
+g++ main.cpp -L. -lgreetings -Xlinker -rpath -Xlinker .
+```
+
+以下で実行結果を確認できる。
+
+```bash
+$ ./a.out
+Hello!
+Good morning!
+```
+
+### CMakeを使ってみる
+
+静的ライブラリと共有ライブラリを作るときのコマンドは同一で、`CMakelists.txt` の内容が異なるだけ
+
+```bash
+cmake -S . -B build;
+cmake --build build
+```
+
+### 静的・共有ライブラリの指定について
