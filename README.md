@@ -109,3 +109,44 @@ cmake --build build
 ```
 
 ### 静的・共有ライブラリの指定について
+
+以下のように `CMakeLists` に条件分岐を記載することができる。
+
+```cmake
+# GREETINGS_BUILD_SHARED_LIBSというオプションを作成。デフォルトをOFFに設定。
+option(GREETINGS_BUILD_SHARED_LIBS "build greetings as a shared library" OFF)
+
+if (GREETINGS_BUILD_SHARED_LIBS)
+  add_library(greetings SHARED hello.cpp good_morning.cpp)
+else()
+  add_library(greetings STATIC hello.cpp good_morning.cpp)
+endif()
+```
+
+コマンドラインから次のようにオプションを与えることができます。
+
+```bash
+# -D という prefix は Define の頭文字で、オプション名にこれをつけて指定する
+cmake -S . -B build -DGREETINGS_BUILD_SHARED_LIBS=ON
+
+cmake --build build
+```
+
+## ステップ３：サブディレクトリにソースが分散している場合
+
+ディレクトリ構成を以下のように変更する：
+
+```txt
+---/
+ |
+ |--include/
+ |  |--hello.hpp
+ |  |--good_morning.hpp
+ |
+ |--src/
+ |  |--hello.cpp
+ |  |--good_morning.cpp
+ |
+ |--test/
+    |--main.cpp
+```
