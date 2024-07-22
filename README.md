@@ -150,3 +150,64 @@ cmake --build build
  |--test/
     |--main.cpp
 ```
+
+### コマンドラインからコンパイル
+
+そして以下のコマンドを実行する。
+
+```bash
+# hello.cpp と good_morning.cpp をコンパイルしてオブジェクトファイル (.o) にする
+# -fPIC:
+#  位置独立コード(Position Independent Code)を生成する
+#  ただし位置独立とは、メモリ上のどこにロードされても正しく動作するように書かれているということ
+# -c: コンパイルのみ行い、リンクはしない
+# -I../include: インクルードディレクトリを ../include に設定する
+cd ./src;
+  g++ -fPIC -c hello.cpp good_morning.cpp -I../include;
+cd ..
+
+# すべてのオブジェクトファイル (.o) を共有ライブラリ (libgreetings.so) にリンクする
+# -shared: 共有ライブラリを作成する
+# -o libgreetings.so: 出力ファイル名を libgreetings.so に指定する
+cd ./src;
+  g++ -shared *.o -o libgreetings.so;
+cd ..
+
+# main.cpp をコンパイルして実行可能ファイルにリンクする
+# -I../include: インクルードディレクトリを ../include に設定する
+# -L../src: ライブラリ検索パスを ../src に設定する
+# -lgreetings: libgreetings.so ライブラリをリンクする
+# -Xlinker -rpath -Xlinker ../src: 実行時に ../src ディレクトリをライブラリ検索パスに追加する
+cd ./test;
+  g++ main.cpp -I../include -L../src -lgreetings -Xlinker -rpath -Xlinker ../src;
+cd ..
+```
+
+### CMakeを使ってみる
+
+各ディレクトリごとに `CMakeLists.txt` を作る。
+
+```txt
+---/
+ |--CMakeLists.txt
+ |
+ |--include/
+ |  |--hello.hpp
+ |  |--good_morning.hpp
+ |
+ |--src/
+ |  |--CMakeLists.txt
+ |  |--hello.cpp
+ |  |--good_morning.cpp
+ |
+ |--test/
+    |--CMakeLists.txt
+    |--main.cpp
+```
+
+さっきまでと同じコマンドでビルドできる：
+
+```bash
+cmake -S . -B build -DGREETINGS_BUILD_SHARED_LIBS=ON
+cmake --build build
+```
